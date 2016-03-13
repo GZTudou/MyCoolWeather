@@ -31,13 +31,12 @@ public class HttpUtil {
 						response.append(line);
 					}
 					if(listener != null){
-						Log.d("CoolWeather", "http onfinish() executed  ");
+						LogUtil.d(LogUtil.TAG, "http on finish()"+response);
 						listener.onFinish(response.toString());
 					}
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					if(listener != null){
-						LogUtil.d(LogUtil.TAG, "http Error()");
 						listener.onError(e);
 					}
 				}finally{

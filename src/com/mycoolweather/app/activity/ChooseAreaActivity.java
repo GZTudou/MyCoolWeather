@@ -5,7 +5,10 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -58,6 +61,13 @@ public class ChooseAreaActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		if(prefs.getBoolean("city_selected", false)){
+			Intent intent = new Intent(this,WeatherActivity.class);
+			startActivity(intent);
+			finish();
+			return;
+		}
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.choose_area);
 		listView = (ListView) findViewById(R.id.list_view);
@@ -75,18 +85,25 @@ public class ChooseAreaActivity extends Activity {
 				}else if(currentLevel == LEVEL_CITY){
 					selectedCity = cityList.get(index);
 					queryCounties();
+				}else if(currentLevel == LEVEL_COUNTY){
+					String countyCode = countyList.get(index).getCountyCode();
+					Intent intent = new Intent(ChooseAreaActivity.this,WeatherActivity.class);
+					intent.putExtra("county_code", countyCode);
+					startActivity(intent);
+					finish();
 				}
 			}
 		});
 		//加载省级数据
 		queryProvinces();
 		
+
+		
 	}
 	
 	//查询全国所有的省 优先从数据库查询，如若没有的话从服务器查询
 	public void queryProvinces(){
 		provinceList = coolweatherDB.loadProvinces();
-		Log.d("CoolWeather", "queryProvinces"+provinceList.size());
 		if(provinceList.size() > 0){
 			datalist.clear();
 			for(Province p:provinceList){
@@ -97,7 +114,6 @@ public class ChooseAreaActivity extends Activity {
 			titleText.setText("中国");
 			currentLevel = LEVEL_PROVINCE;
 		}else{
-			Log.d("CoolWeather", "queryProvinces from server");
 			queryFromServer(null,"province");
 		}
 	}
@@ -150,7 +166,6 @@ public class ChooseAreaActivity extends Activity {
 			address = "http://www.weather.com.cn/data/list3/city.xml";
 		}
 	
-		LogUtil.d(LogUtil.TAG, "query from server"+address);
 		
 		showProgressDialog();
 		HttpUtil.sendHttpRequest(address, new HttpCallbackListener() {
